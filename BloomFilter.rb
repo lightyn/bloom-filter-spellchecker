@@ -23,16 +23,19 @@ class BloomFilter
     end
   end
   
-  #This is a little bit of code salad that essentially takes the input value, generates a SHA256 hash from it, converts it to an integer, ensures the int is positive, and then returns it.
+  #This is a little bit of code salad that essentially takes the input value, generates a SHA256 hash from it, 
+  #converts it to an integer, ensures the int is positive, and then returns it.
   def hashValueToInt(value)
     return Digest::SHA256.digest(value).unpack('q').first.abs
   end 
 
   
-  #We'll use this method to either validate values against the filter, or to set it, depending on the block we pass in. The double hash algorithm we're using is adapted from Dillinger and Manilios' bitstate verification research located here: 
+  #We'll use this method to either validate values against the filter, or to set it, depending on the block we pass in. 
+  #The double hash algorithm we're using is adapted from Dillinger and Manilios' bitstate verification research located here: 
   #http://homedirs.ccs.neu.edu/pete/pub/spin-3spin.pdf
   def getHashIndices(value)
-    #For the first hash function we'll just use the lookup value (we have to convert the value to string first because SHA256.digest requires a string input)
+    #For the first hash function we'll just use the lookup value 
+    #(we have to convert the value to string first because SHA256.digest requires a string input)
     @hashIndex = hashValueToInt(value.to_s)%@bitmap.length
     yield
     #On the second, let's salt it.
@@ -46,13 +49,14 @@ class BloomFilter
     end
   end
   
-    
+  #This passes getHashIndices a block that adds the values passed to loadValue to the filter.
   def loadValue(value)
     getHashIndices(value) do 
       @bitmap[@hashIndex] = 1
     end
   end
   
+  #This passes getHashIndices a block that checks if the value passed to validateHashIndices exists in the filter.
   def validateHashIndices(value)
     getHashIndices(value) do
       if @bitmap[@hashIndex] != 1
